@@ -10,14 +10,52 @@ class Car {
     this.maxSpeed = 3;
     this.friction = 0.05;
     this.angle = 0;
+    this.damaged = false;
 
     this.sensor = new Sensor(this);
     this.controls = new Controls();
   }
 
   update(roadBorders) {
-    this.#move();
+    if (!this.damaged) {
+      this.#move();
+      this.polygon = this.#createPolygon();
+      this.damaged = this.#assessDamage(roadBorders);
+    }
     this.sensor.update(roadBorders);
+  }
+
+  #assessDamage(roadBorders) {
+    for (let i = 0; i < roadBorders.length; i++) {
+      if (polygonsIntersect(this.polygon, roadBorders[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  #createPolygon() {
+    const points = [];
+    const rad = Math.hypot(this.width, this.height) / 2;
+    const alpha = Math.atan2(this.width, this.height);
+    points.push({
+      x: this.x - Math.sin(this.angle - alpha) * rad,
+      y: this.y - Math.cos(this.angle - alpha) * rad,
+    });
+    points.push({
+      x: this.x - Math.sin(this.angle + alpha) * rad,
+      y: this.y - Math.cos(this.angle + alpha) * rad,
+    });
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
+      y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad,
+    });
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
+      y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad,
+    });
+
+    return points;
   }
 
   #move() {
@@ -65,15 +103,19 @@ class Car {
   }
 
   draw(context) {
-    context.save();
-    context.translate(this.x, this.y);
-    context.rotate(-this.angle);
-
+    if (this.damaged) {
+      context.fillStyle = "gray";
+    } else {
+      context.fillStyle = "black";
+    }
     context.beginPath();
-    context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
-    context.fill();
+    context.moveTo(this.polygon[0].x, this.polygon[0].y);
 
-    context.restore();
+    for (let i = 1; i < this.polygon.length; i++) {
+      context.lineTo(this.polygon[i].x, this.polygon[i].y);
+    }
+
+    context.fill();
 
     this.sensor.draw(context);
   }
