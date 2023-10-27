@@ -33,7 +33,7 @@ class Car {
         reading === null ? 0 : 1 - reading.offset
       );
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
-      console.log(outputs);
+      // console.log(outputs);
 
       if (this.useBrain) {
         this.controls.forward = outputs[0];
