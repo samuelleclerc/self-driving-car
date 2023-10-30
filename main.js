@@ -9,7 +9,7 @@ const networkContext = networkCanvas.getContext("2d");
 
 const road = new Road(canvas.width / 2, canvas.width * 0.9);
 
-const N = 1;
+const N = 1000;
 const cars = generateCars(N);
 let bestCar = cars[0];
 
@@ -75,10 +75,10 @@ function animate(time) {
 
   context.globalAlpha = 0.2;
   for (const car of cars) {
-    car.draw(context, "blue");
+    car.draw(context);
   }
   context.globalAlpha = 1;
-  bestCar.draw(context, "blue", true);
+  bestCar.draw(context, true);
 
   context.restore();
 

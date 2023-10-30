@@ -1,3 +1,4 @@
+// credits to tmdstudios.wordpress.com for car sprites
 class Car {
   constructor(x, y, width, height, controlType, maxSpeed = 3) {
     this.x = x;
@@ -13,10 +14,14 @@ class Car {
     this.damaged = false;
 
     this.useBrain = controlType === "AI";
+    this.image = new Image();
 
     if (controlType !== "DUMMY") {
       this.sensor = new Sensor(this);
       this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
+      this.image.src = "img/player_car.png";
+    } else {
+      this.image.src = 'img/orange_car.png';
     }
     this.controls = new Controls(controlType);
   }
@@ -33,7 +38,6 @@ class Car {
         reading === null ? 0 : 1 - reading.offset
       );
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
-      // console.log(outputs);
 
       if (this.useBrain) {
         this.controls.forward = outputs[0];
@@ -126,20 +130,18 @@ class Car {
     this.y -= Math.cos(this.angle) * this.speed;
   }
 
-  draw(context, colour, drawSensor = false) {
-    if (this.damaged) {
-      context.fillStyle = "gray";
-    } else {
-      context.fillStyle = colour;
-    }
-    context.beginPath();
-    context.moveTo(this.polygon[0].x, this.polygon[0].y);
-
-    for (let i = 1; i < this.polygon.length; i++) {
-      context.lineTo(this.polygon[i].x, this.polygon[i].y);
-    }
-
-    context.fill();
+  draw(context, drawSensor = false) {
+    context.save();
+    context.translate(this.x, this.y);
+    context.rotate(-this.angle);
+    context.drawImage(
+      this.image,
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height
+    );
+    context.restore();
 
     if (this.sensor && drawSensor) {
       this.sensor.draw(context);
